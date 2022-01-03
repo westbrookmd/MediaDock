@@ -28,18 +28,18 @@ namespace MediaDock
         public void MediaPrevious(object sender, RoutedEventArgs e)
         {
             //Send previous song command
-            Core.Previous();
+            Core.PreviousSong();
 
         }
         public void MediaNext(object sender, RoutedEventArgs e)
         {
             //Send next song command
-            Core.Next();
+            Core.NextSong();
         }
-        public void MediaPausePlay(object sender, RoutedEventArgs e)
+        public void MediaPlayPause(object sender, RoutedEventArgs e)
         {
             //Send pause/play song command
-            Core.PausePlay();
+            Core.PlayPauseSong();
         }
     }
 }
