@@ -24,22 +24,31 @@ namespace MediaDock
         public MainWindow()
         {
             InitializeComponent();
+            VolumeSlider.Value = Core.GetMasterVolume();
         }
         public void MediaPrevious(object sender, RoutedEventArgs e)
         {
-            //Send previous song command
             Core.PreviousSong();
 
         }
         public void MediaNext(object sender, RoutedEventArgs e)
         {
-            //Send next song command
             Core.NextSong();
         }
         public void MediaPlayPause(object sender, RoutedEventArgs e)
         {
-            //Send pause/play song command
             Core.PlayPauseSong();
+        }
+        public void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> newVolume)
+        {
+            try
+            {
+                Core.ChangeMasterVolume((float)newVolume.NewValue);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.StackTrace);
+            }        
         }
     }
 }

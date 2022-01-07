@@ -42,7 +42,15 @@ namespace WindowsAudio
             AudioManager.ToggleMasterVolumeMute();
         }
 
-        
+        public static void ChangeMasterVolume(float newVolume)
+        {
+            AudioManager.SetMasterVolume(newVolume);
+        }
+
+        public static float GetMasterVolume()
+        {
+            return AudioManager.GetMasterVolume();
+        }
 
 
     }
