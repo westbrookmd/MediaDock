@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -24,22 +26,32 @@ namespace MediaDock
         public MainWindow()
         {
             InitializeComponent();
-            VolumeSlider.Value = Core.GetMasterVolume();
+            UpdateVolumeSlider();
+            //start service to count time and refresh volume
+            MasterVolumeUpdater(4);
         }
-        public void MediaPrevious(object sender, RoutedEventArgs e)
+        private void UpdateVolumeSlider()
+        {
+            //updating UI from thread other than the main thread
+            this.Dispatcher.Invoke(() =>
+            {
+                VolumeSlider.Value = Core.GetMasterVolume();
+            });
+        }
+        private void MediaPrevious(object sender, RoutedEventArgs e)
         {
             Core.PreviousSong();
 
         }
-        public void MediaNext(object sender, RoutedEventArgs e)
+        private void MediaNext(object sender, RoutedEventArgs e)
         {
             Core.NextSong();
         }
-        public void MediaPlayPause(object sender, RoutedEventArgs e)
+        private void MediaPlayPause(object sender, RoutedEventArgs e)
         {
             Core.PlayPauseSong();
         }
-        public void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> newVolume)
+        private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> newVolume)
         {
             try
             {
@@ -49,6 +61,16 @@ namespace MediaDock
             {
                 MessageBox.Show(ex.Message, ex.StackTrace);
             }        
+        }
+        private void MasterVolumeUpdater(float intervalInSeconds)
+        {
+            Timer timer = new Timer();
+            timer = new Timer(intervalInSeconds*1000);
+            // Hook up the Elapsed event for the timer. 
+            timer.Elapsed += (sender, e) =>  UpdateVolumeSlider();
+            timer.AutoReset = true;
+            timer.Enabled = true;
+
         }
     }
 }

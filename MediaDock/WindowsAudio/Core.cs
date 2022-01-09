@@ -52,6 +52,5 @@ namespace WindowsAudio
             return AudioManager.GetMasterVolume();
         }
 
-
     }
 }
