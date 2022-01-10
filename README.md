@@ -7,10 +7,11 @@ Basic functionality I want MediaDock to have:
 * ~~Previous/Next~~
 * ~~Master Volume Control~~
 * ~~Window always on top~~
+* Save/Load settings to/from a file
+* Add Custom Styling
 
 # Additional Features
 Extra features that would be nice for MediaDock to have:
-* Save/Load settings to/from a file
 * Background selection
 * Toggle always on top
 * Implement @Musictopia2's (https://github.com/musictopia2) Remote Control Nuget Packages
