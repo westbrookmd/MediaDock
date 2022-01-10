@@ -23,13 +23,62 @@ namespace MediaDock
     /// </summary>
     public partial class MainWindow : Window
     {
+        //Settings variables
+        //window settings
+        public bool topmost;
+        public WindowStartupLocation startupLocation;
+        public ResizeMode resizeMode;
+
+        //services settings
+        public float volumeSliderInterval;
+
         public MainWindow()
         {
             InitializeComponent();
             UpdateVolumeSlider();
-            //start service to count time and refresh volume
-            MasterVolumeUpdater(4);
+            SetDefaultSettingsVariables();
+            try
+            {
+                //TODO:get profile
+                //TODO:set settings variables
+
+                //load settings
+                LoadWindowSettings(topmost, startupLocation, resizeMode);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Unable to load profile. Setting defaults.");
+                //set default settings
+                SetDefaultSettingsVariables();
+                //load default settings
+                LoadWindowSettings(topmost, startupLocation, resizeMode);
+            }
+            finally
+            {
+                //startup necessary services from profile/default settings
+
+                //start service to count time and refresh volume
+                MasterVolumeUpdater(volumeSliderInterval);
+            }
         }
+
+        private void SetDefaultSettingsVariables()
+        {
+            topmost = true;
+            startupLocation = WindowStartupLocation.Manual;
+            resizeMode = ResizeMode.NoResize;
+            volumeSliderInterval = 4;
+        }
+
+        private static void LoadWindowSettings(bool topmost, WindowStartupLocation windowStartupLocation, ResizeMode resizeMode)
+        {
+            Window window = (Window)Application.Current.MainWindow;
+            window.Topmost = topmost;
+            window.WindowStartupLocation = windowStartupLocation;
+            window.ResizeMode = resizeMode;
+        }
+
         private void UpdateVolumeSlider()
         {
             //updating UI from thread other than the main thread
