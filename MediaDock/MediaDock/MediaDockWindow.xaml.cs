@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -21,25 +23,84 @@ namespace MediaDock
     /// </summary>
     public partial class MainWindow : Window
     {
+        //Settings variables
+        //window settings
+        public bool topmost;
+        public WindowStartupLocation startupLocation;
+        public ResizeMode resizeMode;
+
+        //services settings
+        public float volumeSliderInterval;
+
         public MainWindow()
         {
             InitializeComponent();
-            VolumeSlider.Value = Core.GetMasterVolume();
+            UpdateVolumeSlider();
+            SetDefaultSettingsVariables();
+            try
+            {
+                //TODO:get profile
+                //TODO:set settings variables
+
+                //load settings
+                LoadWindowSettings(topmost, startupLocation, resizeMode);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Unable to load profile. Setting defaults.");
+                //set default settings
+                SetDefaultSettingsVariables();
+                //load default settings
+                LoadWindowSettings(topmost, startupLocation, resizeMode);
+            }
+            finally
+            {
+                //startup necessary services from profile/default settings
+
+                //start service to count time and refresh volume
+                MasterVolumeUpdater(volumeSliderInterval);
+            }
         }
-        public void MediaPrevious(object sender, RoutedEventArgs e)
+
+        private void SetDefaultSettingsVariables()
+        {
+            topmost = true;
+            startupLocation = WindowStartupLocation.Manual;
+            resizeMode = ResizeMode.NoResize;
+            volumeSliderInterval = 4;
+        }
+
+        private static void LoadWindowSettings(bool topmost, WindowStartupLocation windowStartupLocation, ResizeMode resizeMode)
+        {
+            Window window = (Window)Application.Current.MainWindow;
+            window.Topmost = topmost;
+            window.WindowStartupLocation = windowStartupLocation;
+            window.ResizeMode = resizeMode;
+        }
+
+        private void UpdateVolumeSlider()
+        {
+            //updating UI from thread other than the main thread
+            this.Dispatcher.Invoke(() =>
+            {
+                VolumeSlider.Value = Core.GetMasterVolume();
+            });
+        }
+        private void MediaPrevious(object sender, RoutedEventArgs e)
         {
             Core.PreviousSong();
 
         }
-        public void MediaNext(object sender, RoutedEventArgs e)
+        private void MediaNext(object sender, RoutedEventArgs e)
         {
             Core.NextSong();
         }
-        public void MediaPlayPause(object sender, RoutedEventArgs e)
+        private void MediaPlayPause(object sender, RoutedEventArgs e)
         {
             Core.PlayPauseSong();
         }
-        public void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> newVolume)
+        private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> newVolume)
         {
             try
             {
@@ -49,6 +110,16 @@ namespace MediaDock
             {
                 MessageBox.Show(ex.Message, ex.StackTrace);
             }        
+        }
+        private void MasterVolumeUpdater(float intervalInSeconds)
+        {
+            Timer timer = new Timer();
+            timer = new Timer(intervalInSeconds*1000);
+            // Hook up the Elapsed event for the timer. 
+            timer.Elapsed += (sender, e) =>  UpdateVolumeSlider();
+            timer.AutoReset = true;
+            timer.Enabled = true;
+
         }
     }
 }
