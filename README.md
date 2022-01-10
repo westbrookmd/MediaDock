@@ -6,7 +6,7 @@ Basic functionality I want MediaDock to have:
 * ~~Start/Stop~~
 * ~~Previous/Next~~
 * ~~Master Volume Control~~
-* Window always on top
+* ~~Window always on top~~
 
 # Additional Features
 Extra features that would be nice for MediaDock to have:
