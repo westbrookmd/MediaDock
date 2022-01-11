@@ -35,6 +35,7 @@ namespace MediaDock
         public MainWindow()
         {
             InitializeComponent();
+            MouseDown += Window_MouseDown;
             UpdateVolumeSlider();
             SetDefaultSettingsVariables();
             try
@@ -60,6 +61,14 @@ namespace MediaDock
 
                 //start service to count time and refresh volume
                 MasterVolumeUpdater(volumeSliderInterval);
+            }
+        }
+        //https://stackoverflow.com/a/20623867/17573746
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                DragMove();
             }
         }
 
