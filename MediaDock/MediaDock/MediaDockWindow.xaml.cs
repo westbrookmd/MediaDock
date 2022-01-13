@@ -35,6 +35,7 @@ namespace MediaDock
         public MainWindow()
         {
             InitializeComponent();
+            MouseDown += Window_MouseDown;
             UpdateVolumeSlider();
             SetDefaultSettingsVariables();
             try
@@ -61,6 +62,29 @@ namespace MediaDock
                 //start service to count time and refresh volume
                 MasterVolumeUpdater(volumeSliderInterval);
             }
+        }
+        //https://stackoverflow.com/a/20623867/17573746
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                DragMove();
+            }
+            else if(e.ChangedButton == MouseButton.Right)
+            {
+                //context menu goes here
+                ContextMenu contextMenu = new ContextMenu();
+                MenuItem menuItemExit = new MenuItem();
+                menuItemExit.Header = "Close MediaDock";
+                menuItemExit.Click += new RoutedEventHandler(this.Close_Window);
+                contextMenu.Items.Add(menuItemExit);
+                contextMenu.IsOpen = true;
+            }
+        }
+
+        public void Close_Window(object sender, System.EventArgs e)
+        {
+            Application.Current.MainWindow.Close();
         }
 
         private void SetDefaultSettingsVariables()

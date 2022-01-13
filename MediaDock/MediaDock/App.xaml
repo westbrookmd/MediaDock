@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:MediaDock"
              StartupUri="MediaDockWindow.xaml">
     <Application.Resources>
-         
+
     </Application.Resources>
 </Application>
