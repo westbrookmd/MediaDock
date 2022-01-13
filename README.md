@@ -1,6 +1,8 @@
 # MediaDock
 This is a light-weight application to control audio playback on Windows.
 
+![MediaDock Screenshot](https://i.imgur.com/0vYMCI7.png)
+
 # Roadmap
 Basic functionality I want MediaDock to have:
 * ~~Start/Stop~~
