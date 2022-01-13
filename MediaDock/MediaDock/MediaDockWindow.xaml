@@ -4,9 +4,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Media Dock" Height="80" Width="250"
+        Title="Media Dock" Height="100" Width="250"
         WindowStyle="None"
         BorderBrush="Black">
+
+
     <Grid Background="#0F0F2D">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" />
@@ -14,13 +16,26 @@
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height=".00*" />
-            <RowDefinition Height="1*" />
+            <RowDefinition Height=".3*" />
+            <RowDefinition Height=".8*" />
             <RowDefinition Height=".6*" />
         </Grid.RowDefinitions>
-        
 
-            <!-- Media Controls Row -->
+        <!-- Title Row -->
+        <TextBlock x:Name="TitleText" Text="Media Dock" Grid.ColumnSpan="3">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="TextElement.FontFamily" Value="Fonts/#Dosis"/>
+                    <Setter Property="FontSize" Value="18"/>
+                    <Setter Property="Foreground" Value="Cyan"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="HorizontalAlignment" Value="Left"/>
+
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+        
+        <!-- Media Controls Row -->
         <Button Content="Previous" Click="MediaPrevious" Grid.Column="0" Grid.Row="1">
             <Button.Style>
                 <Style TargetType="Button">
@@ -45,7 +60,7 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Button Content="Play/Pause" Click="MediaPlayPause" Grid.Column="1" Grid.Row="1" >
+        <Button Content="Play" Click="MediaPlayPause" Grid.Column="1" Grid.Row="1" >
             <Button.Style>
                 <Style TargetType="Button">
                     <Setter Property="TextElement.FontFamily" Value="Fonts/#Dosis"/>

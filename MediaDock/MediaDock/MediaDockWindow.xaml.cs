@@ -70,6 +70,21 @@ namespace MediaDock
             {
                 DragMove();
             }
+            else if(e.ChangedButton == MouseButton.Right)
+            {
+                //context menu goes here
+                ContextMenu contextMenu = new ContextMenu();
+                MenuItem menuItemExit = new MenuItem();
+                menuItemExit.Header = "Close MediaDock";
+                menuItemExit.Click += new RoutedEventHandler(this.Close_Window);
+                contextMenu.Items.Add(menuItemExit);
+                contextMenu.IsOpen = true;
+            }
+        }
+
+        public void Close_Window(object sender, System.EventArgs e)
+        {
+            Application.Current.MainWindow.Close();
         }
 
         private void SetDefaultSettingsVariables()
