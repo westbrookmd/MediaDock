@@ -9,7 +9,7 @@ Basic functionality I want MediaDock to have:
 * ~~Previous/Next~~
 * ~~Master Volume Control~~
 * ~~Window always on top~~
-* Save/Load settings to/from a file
+* ~~Save/Load settings to/from a file~~
 * Add Custom Styling
 
 # Additional Features
