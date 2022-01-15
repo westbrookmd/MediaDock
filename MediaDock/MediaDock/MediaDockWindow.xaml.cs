@@ -28,11 +28,14 @@ namespace MediaDock
     {
         //Settings variables
         //window settings
-        UserSettingsModel settings = new UserSettingsModel();
+        public UserSettingsModel settings = new UserSettingsModel();
         string settingsFilePath = Environment.CurrentDirectory + "\\Settings.ini";
 
         //services settings
         public float volumeSliderInterval;
+
+        //Service
+        Timer volumeUpdater;
 
         public MainWindow()
         {
@@ -58,7 +61,7 @@ namespace MediaDock
                 //startup necessary services from profile/default settings
 
                 //start service to count time and refresh volume
-                MasterVolumeUpdater(settings.VolumeSliderUpdateInterval);
+                volumeUpdater = MasterVolumeUpdater(settings.VolumeSliderUpdateInterval);
             }
         }
 
@@ -103,17 +106,32 @@ namespace MediaDock
             {
                 //context menu goes here
                 ContextMenu contextMenu = new ContextMenu();
-                MenuItem menuItemExit = new MenuItem();
-                menuItemExit.Header = "Close MediaDock";
-                menuItemExit.Click += new RoutedEventHandler(Close_Window);
-                contextMenu.Items.Add(menuItemExit);
 
-                MenuItem menuItemSave = new MenuItem();
-                menuItemSave.Header = "Save Settings";
+                //saving
+                MenuItem menuItemSettings = new MenuItem
+                {
+                    Header = "Settings"
+                };
+                menuItemSettings.Click += Show_Settings_Window;
+                contextMenu.Items.Add(menuItemSettings);
+
+                //saving
+                MenuItem menuItemSave = new MenuItem
+                {
+                    Header = "Save Settings"
+                };
                 menuItemSave.Click += new RoutedEventHandler(Save_Settings);
                 contextMenu.Items.Add(menuItemSave);
 
+                //exit
+                MenuItem menuItemExit = new MenuItem
+                {
+                    Header = "Close MediaDock"
+                };
+                menuItemExit.Click += new RoutedEventHandler(Close_Window);
+                contextMenu.Items.Add(menuItemExit);
 
+                //make the context menu visible
                 contextMenu.IsOpen = true;
             }
         }
@@ -136,6 +154,30 @@ namespace MediaDock
 
                 MessageBox.Show(exception.Message, exception.Message);
             }
+        }
+
+        public void Show_Settings_Window(object sender, System.EventArgs e)
+        {
+            this.Hide();
+            // HACK: using this gross way to pass information to other windows
+            Application.Current.Resources.Add("Settings", settings);
+            SettingsWindow settingsWindow = new SettingsWindow(ref settings);
+            
+            bool? settingsUpdated = settingsWindow.ShowDialog();
+            //update our main window to reflect the settings
+            if (settingsUpdated != null)
+            {
+                UserSettingsModel? _settings = Application.Current.Resources["Settings"] as UserSettingsModel;
+                if (_settings != null)
+                {
+                    settings = _settings;
+                }
+                Application.Current.Resources.Remove("Settings");
+                LoadWindowSettings(settings);
+                volumeUpdater.Stop();
+                volumeUpdater = MasterVolumeUpdater(settings.VolumeSliderUpdateInterval);
+            }
+            this.Show();
         }
 
         //https://stackoverflow.com/a/22425211/17573746
@@ -202,7 +244,7 @@ namespace MediaDock
                 MessageBox.Show(ex.Message, ex.StackTrace);
             }        
         }
-        private void MasterVolumeUpdater(float intervalInSeconds)
+        private Timer MasterVolumeUpdater(float intervalInSeconds)
         {
             Timer timer = new Timer();
             timer = new Timer(intervalInSeconds*1000);
@@ -210,7 +252,7 @@ namespace MediaDock
             timer.Elapsed += (sender, e) =>  UpdateVolumeSlider();
             timer.AutoReset = true;
             timer.Enabled = true;
-
+            return timer;
         }
     }
 }
