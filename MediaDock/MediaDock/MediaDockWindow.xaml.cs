@@ -29,7 +29,7 @@ namespace MediaDock
         //Settings variables
         //window settings
         public UserSettingsModel settings = new UserSettingsModel();
-        string settingsFilePath = Environment.CurrentDirectory + "\\Settings.ini";
+        public string settingsFilePath = Environment.CurrentDirectory + "\\Settings.ini";
 
         //services settings
         public float volumeSliderInterval;
@@ -115,14 +115,6 @@ namespace MediaDock
                 menuItemSettings.Click += Show_Settings_Window;
                 contextMenu.Items.Add(menuItemSettings);
 
-                //saving
-                MenuItem menuItemSave = new MenuItem
-                {
-                    Header = "Save Settings"
-                };
-                menuItemSave.Click += new RoutedEventHandler(Save_Settings);
-                contextMenu.Items.Add(menuItemSave);
-
                 //exit
                 MenuItem menuItemExit = new MenuItem
                 {
@@ -141,7 +133,7 @@ namespace MediaDock
             Application.Current.MainWindow.Close();
         }
 
-        public void Save_Settings(object sender, System.EventArgs e)
+        public void SaveSettings()
         {
 
             try
@@ -161,22 +153,34 @@ namespace MediaDock
             this.Hide();
             // HACK: using this gross way to pass information to other windows
             Application.Current.Resources.Add("Settings", settings);
+            
+            // open the settings window and give it our current settings
             SettingsWindow settingsWindow = new SettingsWindow(ref settings);
             
             bool? settingsUpdated = settingsWindow.ShowDialog();
-            //update our main window to reflect the settings
+
+            //update our main window to reflect the settings if the result is true
             if (settingsUpdated != null)
             {
-                UserSettingsModel? _settings = Application.Current.Resources["Settings"] as UserSettingsModel;
-                if (_settings != null)
+                if(settingsUpdated.Value == true)
                 {
-                    settings = _settings;
+                    // get the settings that were edited
+                    UserSettingsModel? _settings = Application.Current.Resources["Settings"] as UserSettingsModel;
+                    if (_settings != null)
+                    {
+                        settings = _settings;
+                    }
+                    // remove the resource to prevent accidental usage in other areas of the program
+                    Application.Current.Resources.Remove("Settings");
+
+                    // save to the default file, update the UI, and update the services
+                    SaveSettings();
+                    LoadWindowSettings(settings);
+                    volumeUpdater.Stop();
+                    volumeUpdater = MasterVolumeUpdater(settings.VolumeSliderUpdateInterval);
                 }
-                Application.Current.Resources.Remove("Settings");
-                LoadWindowSettings(settings);
-                volumeUpdater.Stop();
-                volumeUpdater = MasterVolumeUpdater(settings.VolumeSliderUpdateInterval);
             }
+            Application.Current.Resources.Remove("Settings");
             this.Show();
         }
 
