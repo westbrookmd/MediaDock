@@ -1,7 +1,9 @@
 ﻿using MediaDock.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,6 +29,7 @@ namespace MediaDock
         //Settings variables
         //window settings
         UserSettingsModel settings = new UserSettingsModel();
+        string settingsFilePath = Environment.CurrentDirectory + "\\Settings.ini";
 
         //services settings
         public float volumeSliderInterval;
@@ -36,13 +39,9 @@ namespace MediaDock
             InitializeComponent();
             MouseDown += Window_MouseDown;
             UpdateVolumeSlider();
-            SetDefaultSettingsVariables();
             try
             {
-                //TODO:get profile
-                //TODO:set settings variables
-
-                //load settings
+                GetSettings();
                 LoadWindowSettings(settings);
 
             }
@@ -50,7 +49,7 @@ namespace MediaDock
             {
                 Console.WriteLine("Unable to load profile. Setting defaults.");
                 //set default settings
-                SetDefaultSettingsVariables();
+                SetDefaultSettings();
                 //load default settings
                 LoadWindowSettings(settings);
             }
@@ -62,6 +61,37 @@ namespace MediaDock
                 MasterVolumeUpdater(settings.VolumeSliderUpdateInterval);
             }
         }
+
+        private void GetSettings()
+        {
+            UserSettingsModel? settingsFile = ReadFromJsonFile<UserSettingsModel>(settingsFilePath);
+            if (settingsFile != null)
+            {
+                settings = settingsFile;
+            }
+            else
+            {
+                SetDefaultSettings();
+            }
+        }
+
+        //https://stackoverflow.com/a/22425211/17573746
+        public static T? ReadFromJsonFile<T>(string filePath) where T : new()
+        {
+            TextReader? reader = null;
+            try
+            {
+                reader = new StreamReader(filePath);
+                var fileContents = reader.ReadToEnd();
+                return JsonConvert.DeserializeObject<T>(fileContents);
+            }
+            finally
+            {
+                if (reader != null)
+                    reader.Close();
+            }
+        }
+
         //https://stackoverflow.com/a/20623867/17573746
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -77,6 +107,13 @@ namespace MediaDock
                 menuItemExit.Header = "Close MediaDock";
                 menuItemExit.Click += new RoutedEventHandler(Close_Window);
                 contextMenu.Items.Add(menuItemExit);
+
+                MenuItem menuItemSave = new MenuItem();
+                menuItemSave.Header = "Save Settings";
+                menuItemSave.Click += new RoutedEventHandler(Save_Settings);
+                contextMenu.Items.Add(menuItemSave);
+
+
                 contextMenu.IsOpen = true;
             }
         }
@@ -86,15 +123,41 @@ namespace MediaDock
             Application.Current.MainWindow.Close();
         }
 
-        private void SetDefaultSettingsVariables()
+        public void Save_Settings(object sender, System.EventArgs e)
         {
-            UserSettingsModel defaultSettings = new UserSettingsModel
+
+            try
             {
-                WindowIsAlwaysOnTop = true,
-                WindowStartupLocation = WindowStartupLocation.Manual,
-                WindowResizeMode = ResizeMode.NoResize,
-                VolumeSliderUpdateInterval = 4,
-            };
+                WriteToJsonFile<UserSettingsModel>(settingsFilePath, settings);
+                MessageBox.Show("File Saved Successfully!", "Save Complete");
+            }
+            catch (Exception exception)
+            {
+
+                MessageBox.Show(exception.Message, exception.Message);
+            }
+        }
+
+        //https://stackoverflow.com/a/22425211/17573746
+        public static void WriteToJsonFile<T>(string filePath, T objectToWrite, bool append = false) where T : new()
+        {
+            TextWriter? writer = null;
+            try
+            {
+                var contentsToWriteToFile = JsonConvert.SerializeObject(objectToWrite);
+                writer = new StreamWriter(filePath, append);
+                writer.Write(contentsToWriteToFile);
+            }
+            finally
+            {
+                if (writer != null)
+                    writer.Close();
+            }
+        }
+
+        private void SetDefaultSettings()
+        {
+            UserSettingsModel defaultSettings = new UserSettingsModel();
             settings = defaultSettings;
         }
             

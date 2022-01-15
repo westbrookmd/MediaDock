@@ -9,9 +9,10 @@ namespace MediaDock.Models
 {
     public class UserSettingsModel
     {
-        public bool WindowIsAlwaysOnTop { get; set; }
-        public WindowStartupLocation WindowStartupLocation { get; set; }
-        public ResizeMode WindowResizeMode { get; set; }
-        public float VolumeSliderUpdateInterval { get; set; }
+        public bool WindowIsAlwaysOnTop { get; set; } = true;
+        public WindowStartupLocation WindowStartupLocation { get; set; } = WindowStartupLocation.Manual;
+        public ResizeMode WindowResizeMode { get; set; } = ResizeMode.NoResize;
+        public float VolumeSliderUpdateInterval { get; set; } = 4;
+
     }
 }
