@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaDock.Models;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -25,9 +26,7 @@ namespace MediaDock
     {
         //Settings variables
         //window settings
-        public bool topmost;
-        public WindowStartupLocation startupLocation;
-        public ResizeMode resizeMode;
+        UserSettingsModel settings = new UserSettingsModel();
 
         //services settings
         public float volumeSliderInterval;
@@ -44,7 +43,7 @@ namespace MediaDock
                 //TODO:set settings variables
 
                 //load settings
-                LoadWindowSettings(topmost, startupLocation, resizeMode);
+                LoadWindowSettings(settings);
 
             }
             catch (Exception ex)
@@ -53,14 +52,14 @@ namespace MediaDock
                 //set default settings
                 SetDefaultSettingsVariables();
                 //load default settings
-                LoadWindowSettings(topmost, startupLocation, resizeMode);
+                LoadWindowSettings(settings);
             }
             finally
             {
                 //startup necessary services from profile/default settings
 
                 //start service to count time and refresh volume
-                MasterVolumeUpdater(volumeSliderInterval);
+                MasterVolumeUpdater(settings.VolumeSliderUpdateInterval);
             }
         }
         //https://stackoverflow.com/a/20623867/17573746
@@ -76,7 +75,7 @@ namespace MediaDock
                 ContextMenu contextMenu = new ContextMenu();
                 MenuItem menuItemExit = new MenuItem();
                 menuItemExit.Header = "Close MediaDock";
-                menuItemExit.Click += new RoutedEventHandler(this.Close_Window);
+                menuItemExit.Click += new RoutedEventHandler(Close_Window);
                 contextMenu.Items.Add(menuItemExit);
                 contextMenu.IsOpen = true;
             }
@@ -89,18 +88,23 @@ namespace MediaDock
 
         private void SetDefaultSettingsVariables()
         {
-            topmost = true;
-            startupLocation = WindowStartupLocation.Manual;
-            resizeMode = ResizeMode.NoResize;
-            volumeSliderInterval = 4;
+            UserSettingsModel defaultSettings = new UserSettingsModel
+            {
+                WindowIsAlwaysOnTop = true,
+                WindowStartupLocation = WindowStartupLocation.Manual,
+                WindowResizeMode = ResizeMode.NoResize,
+                VolumeSliderUpdateInterval = 4,
+            };
+            settings = defaultSettings;
         }
+            
 
-        private static void LoadWindowSettings(bool topmost, WindowStartupLocation windowStartupLocation, ResizeMode resizeMode)
+        private static void LoadWindowSettings(UserSettingsModel s)
         {
             Window window = (Window)Application.Current.MainWindow;
-            window.Topmost = topmost;
-            window.WindowStartupLocation = windowStartupLocation;
-            window.ResizeMode = resizeMode;
+            window.Topmost = s.WindowIsAlwaysOnTop;
+            window.WindowStartupLocation = s.WindowStartupLocation;
+            window.ResizeMode = s.WindowResizeMode;
         }
 
         private void UpdateVolumeSlider()
