@@ -1,6 +1,9 @@
-﻿using System;
+﻿using MediaDock.Models;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,44 +28,73 @@ namespace MediaDock
     {
         //Settings variables
         //window settings
-        public bool topmost;
-        public WindowStartupLocation startupLocation;
-        public ResizeMode resizeMode;
+        public UserSettingsModel settings = new UserSettingsModel();
+        public string settingsFilePath = Environment.CurrentDirectory + "\\Settings.ini";
 
         //services settings
         public float volumeSliderInterval;
+
+        //Service
+        Timer volumeUpdater;
 
         public MainWindow()
         {
             InitializeComponent();
             MouseDown += Window_MouseDown;
             UpdateVolumeSlider();
-            SetDefaultSettingsVariables();
             try
             {
-                //TODO:get profile
-                //TODO:set settings variables
-
-                //load settings
-                LoadWindowSettings(topmost, startupLocation, resizeMode);
+                GetSettings();
+                LoadWindowSettings(settings);
 
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Unable to load profile. Setting defaults.");
                 //set default settings
-                SetDefaultSettingsVariables();
+                SetDefaultSettings();
                 //load default settings
-                LoadWindowSettings(topmost, startupLocation, resizeMode);
+                LoadWindowSettings(settings);
             }
             finally
             {
                 //startup necessary services from profile/default settings
 
                 //start service to count time and refresh volume
-                MasterVolumeUpdater(volumeSliderInterval);
+                volumeUpdater = MasterVolumeUpdater(settings.VolumeSliderUpdateInterval);
             }
         }
+
+        private void GetSettings()
+        {
+            UserSettingsModel? settingsFile = ReadFromJsonFile<UserSettingsModel>(settingsFilePath);
+            if (settingsFile != null)
+            {
+                settings = settingsFile;
+            }
+            else
+            {
+                SetDefaultSettings();
+            }
+        }
+
+        //https://stackoverflow.com/a/22425211/17573746
+        public static T? ReadFromJsonFile<T>(string filePath) where T : new()
+        {
+            TextReader? reader = null;
+            try
+            {
+                reader = new StreamReader(filePath);
+                var fileContents = reader.ReadToEnd();
+                return JsonConvert.DeserializeObject<T>(fileContents);
+            }
+            finally
+            {
+                if (reader != null)
+                    reader.Close();
+            }
+        }
+
         //https://stackoverflow.com/a/20623867/17573746
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -74,10 +106,24 @@ namespace MediaDock
             {
                 //context menu goes here
                 ContextMenu contextMenu = new ContextMenu();
-                MenuItem menuItemExit = new MenuItem();
-                menuItemExit.Header = "Close MediaDock";
-                menuItemExit.Click += new RoutedEventHandler(this.Close_Window);
+
+                //saving
+                MenuItem menuItemSettings = new MenuItem
+                {
+                    Header = "Settings"
+                };
+                menuItemSettings.Click += Show_Settings_Window;
+                contextMenu.Items.Add(menuItemSettings);
+
+                //exit
+                MenuItem menuItemExit = new MenuItem
+                {
+                    Header = "Close MediaDock"
+                };
+                menuItemExit.Click += new RoutedEventHandler(Close_Window);
                 contextMenu.Items.Add(menuItemExit);
+
+                //make the context menu visible
                 contextMenu.IsOpen = true;
             }
         }
@@ -87,20 +133,87 @@ namespace MediaDock
             Application.Current.MainWindow.Close();
         }
 
-        private void SetDefaultSettingsVariables()
+        public void SaveSettings()
         {
-            topmost = true;
-            startupLocation = WindowStartupLocation.Manual;
-            resizeMode = ResizeMode.NoResize;
-            volumeSliderInterval = 4;
+
+            try
+            {
+                WriteToJsonFile<UserSettingsModel>(settingsFilePath, settings);
+                MessageBox.Show("File Saved Successfully!", "Save Complete");
+            }
+            catch (Exception exception)
+            {
+
+                MessageBox.Show(exception.Message, exception.Message);
+            }
         }
 
-        private static void LoadWindowSettings(bool topmost, WindowStartupLocation windowStartupLocation, ResizeMode resizeMode)
+        public void Show_Settings_Window(object sender, System.EventArgs e)
+        {
+            this.Hide();
+            // HACK: using this gross way to pass information to other windows
+            Application.Current.Resources.Add("Settings", settings);
+            
+            // open the settings window and give it our current settings
+            SettingsWindow settingsWindow = new SettingsWindow(ref settings);
+            
+            bool? settingsUpdated = settingsWindow.ShowDialog();
+
+            //update our main window to reflect the settings if the result is true
+            if (settingsUpdated != null)
+            {
+                if(settingsUpdated.Value == true)
+                {
+                    // get the settings that were edited
+                    UserSettingsModel? _settings = Application.Current.Resources["Settings"] as UserSettingsModel;
+                    if (_settings != null)
+                    {
+                        settings = _settings;
+                    }
+                    // remove the resource to prevent accidental usage in other areas of the program
+                    Application.Current.Resources.Remove("Settings");
+
+                    // save to the default file, update the UI, and update the services
+                    SaveSettings();
+                    LoadWindowSettings(settings);
+                    volumeUpdater.Stop();
+                    volumeUpdater = MasterVolumeUpdater(settings.VolumeSliderUpdateInterval);
+                }
+            }
+            Application.Current.Resources.Remove("Settings");
+            this.Show();
+        }
+
+        //https://stackoverflow.com/a/22425211/17573746
+        public static void WriteToJsonFile<T>(string filePath, T objectToWrite, bool append = false) where T : new()
+        {
+            TextWriter? writer = null;
+            try
+            {
+                var contentsToWriteToFile = JsonConvert.SerializeObject(objectToWrite);
+                writer = new StreamWriter(filePath, append);
+                writer.Write(contentsToWriteToFile);
+            }
+            finally
+            {
+                if (writer != null)
+                    writer.Close();
+            }
+        }
+
+        private void SetDefaultSettings()
+        {
+            UserSettingsModel defaultSettings = new UserSettingsModel();
+            settings = defaultSettings;
+        }
+            
+
+        private static void LoadWindowSettings(UserSettingsModel s)
         {
             Window window = (Window)Application.Current.MainWindow;
-            window.Topmost = topmost;
-            window.WindowStartupLocation = windowStartupLocation;
-            window.ResizeMode = resizeMode;
+            window.Topmost = s.WindowIsAlwaysOnTop;
+            window.WindowStartupLocation = s.WindowStartupLocation;
+            window.ResizeMode = s.WindowResizeMode;
         }
 
         private void UpdateVolumeSlider()
@@ -135,7 +248,7 @@ namespace MediaDock
                 MessageBox.Show(ex.Message, ex.StackTrace);
             }        
         }
-        private void MasterVolumeUpdater(float intervalInSeconds)
+        private Timer MasterVolumeUpdater(float intervalInSeconds)
         {
             Timer timer = new Timer();
             timer = new Timer(intervalInSeconds*1000);
@@ -143,7 +256,7 @@ namespace MediaDock
             timer.Elapsed += (sender, e) =>  UpdateVolumeSlider();
             timer.AutoReset = true;
             timer.Enabled = true;
-
+            return timer;
         }
     }
 }

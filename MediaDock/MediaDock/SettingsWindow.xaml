@@ -1,0 +1,77 @@
+﻿<Window x:Class="MediaDock.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:local="clr-namespace:MediaDock"
+        mc:Ignorable="d"
+        Title="Settings" Height="200" Width="400">
+    <Window.Resources>
+        <local:App x:Key="Settings"/>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- First Row -->
+        
+        <ToggleButton x:Name="AlwaysOnTop"
+                     Grid.Row="0"
+                     Grid.Column="0"
+                     Content="Always on Top" 
+                     Height="20"/>
+        <ComboBox x:Name="StartupLocation"
+                  Grid.Row="0"
+                  Grid.Column="1" 
+                  SelectedValue="{Binding ElementName=CurrentSettings, Path=WindowStartupLocation}"
+                  Height="20">
+            <ComboBoxItem Content="Manual"/>
+            <ComboBoxItem Content="CenterOwner"/>
+            <ComboBoxItem Content="CenterScreen"/>
+        </ComboBox>
+        
+        <!-- Second Row -->
+        <ComboBox x:Name="ResizeMode"
+                  Grid.Row="1"
+                  Grid.Column="0" 
+                  SelectedValue="{Binding ElementName=CurrentSettings, Path=WindowResizeMode}"
+                  Height="20">
+            <ComboBoxItem Content="NoResize"/>
+            <ComboBoxItem Content="CanMinimize"/>
+            <ComboBoxItem Content="CanResize"/>
+            <ComboBoxItem Content="CanResizeWithGrip"/>
+        </ComboBox>
+        <xctk:IntegerUpDown Grid.Row="1"
+                            Grid.Column="1"
+                            x:Name="VolumeUpdateInterval"
+                            Height="40"/>
+        
+        <!-- Third Row -->
+        <Button x:Name="Save"
+                Grid.Row="2"
+                Grid.Column="0"
+                Content="Save"
+                Click="Save_Settings"/>
+        <Button x:Name="Load"
+                Grid.Row="2"
+                Grid.Column="1"
+                Content="Load"
+                Click="Load_Settings"/>
+        <Button x:Name="Cancel"
+                Grid.Row="2"
+                Grid.Column="2"
+                Content="Cancel"
+                Click="Cancel_Settings"/>
+    </Grid>
+</Window>
