@@ -18,6 +18,7 @@ Extra features that would be nice for MediaDock to have:
 * Toggle always on top
 * Implement @Musictopia2's (https://github.com/musictopia2) Remote Control Nuget Packages
 * Application-specific Volume Control
+* Global hotkeys (hotkeys that work when the app isn't focused)
 
 # Installation Instructions
 This application is still in development and doesn't have instructions yet.
