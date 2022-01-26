@@ -18,8 +18,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height=".3*" />
             <RowDefinition Height=".8*" />
-            <RowDefinition Height=".5*" />
-            <RowDefinition Height=".6*" />
+            <RowDefinition Height=".35*" />
         </Grid.RowDefinitions>
 
         <!-- Title Row -->
@@ -109,26 +108,12 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <!--Volume percentage view row-->
-        <!--https://wpf-tutorial.com/misc-controls/the-progressbar-control/-->
-        <TextBlock 
-            Grid.ColumnSpan="3" Grid.Row="2"
-            FontFamily="Fonts/#Dosis"
-            FontSize="18" 
-            VerticalAlignment="Center" HorizontalAlignment="Left" 
-            Foreground="Cyan">Volume Percentage:</TextBlock>
-        <TextBlock Grid.Row="2"
-                   Grid.ColumnSpan="3"
-                   FontFamily="Fonts/#Dosis"
-                   FontSize="18"
-                   Text="{Binding ElementName=VolumeSlider,Path=Value,StringFormat={}{0:0}%}"
-                   HorizontalAlignment="Left"
-                   VerticalAlignment="Center"
-                   Foreground="Cyan" Margin="160,0,0,0"
-                   />
+
         <!-- Volume Controls Row-->
         <Slider x:Name="VolumeSlider" Background="White" ValueChanged="VolumeSlider_ValueChanged"
                 Grid.ColumnSpan="3" Grid.Row="4" TickFrequency="5" TickPlacement="BottomRight"
-                IsSnapToTickEnabled="True" Maximum="100" VerticalAlignment="Center"/>
+                IsSnapToTickEnabled="True" Maximum="100" VerticalAlignment="Center"
+                AutoToolTipPlacement="BottomRight"
+                />
     </Grid>
 </Window>
