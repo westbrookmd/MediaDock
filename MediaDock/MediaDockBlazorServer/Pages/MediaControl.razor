@@ -1,0 +1,53 @@
+﻿@page "/MediaControl"
+
+@using MediaDockBlazorServer.Data
+@inject IMediaControlsDataAccess media
+
+<h1>Media Control</h1>
+
+<p>This is a way to control media on your computer.</p>
+
+@if (media == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <p>The media is currently @isPlayingDisplay. The volume is @volume.</p>
+
+    <button class="btn btn-primary" @onclick="ToggleIsPlaying">@btnPlayingDisplay</button>
+}
+
+@code {
+    public bool isPlaying;
+    public string isPlayingDisplay;
+    public string btnPlayingDisplay;
+    private float volume;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        isPlayingDisplay = media.GetPlayingStatus();
+        isPlaying = media.isPlaying;
+        SetPlayingButton();
+        volume = media.GetVolume();
+    }
+    private void ToggleIsPlaying()
+    {
+        media.SetPlayingStatus(!isPlaying);
+        isPlaying = media.isPlaying;
+        SetPlayingButton();
+        isPlayingDisplay = media.GetPlayingStatus();
+    }
+    private void SetPlayingButton()
+    {
+        if(isPlaying)
+        {
+            btnPlayingDisplay = "Pause";
+        }
+        else
+        {
+            btnPlayingDisplay = "Play";
+        }
+    }
+}
