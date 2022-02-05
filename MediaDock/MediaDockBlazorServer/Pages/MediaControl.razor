@@ -14,40 +14,51 @@
 else
 {
     <p>The media is currently @isPlayingDisplay. The volume is @volume.</p>
-
-    <button class="btn btn-primary" @onclick="ToggleIsPlaying">@btnPlayingDisplay</button>
+    <div class="btn-group" role="group" aria-label="Media Controls">
+        <button class="btn btn-outline-primary" @onclick="Previous">Previous</button>
+        <button class="btn btn-outline-primary" @onclick="ToggleIsPlaying">@btnPlayingDisplay</button>
+        <button class="btn btn-outline-primary" @onclick="Next">Next</button>
+    </div>
 }
 
-@code {
-    public bool isPlaying;
-    public string isPlayingDisplay;
-    public string btnPlayingDisplay;
-    private float volume;
+        @code {
+        public bool isPlaying;
+        public string isPlayingDisplay;
+        public string btnPlayingDisplay;
+        private float volume;
 
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        isPlayingDisplay = media.GetPlayingStatus();
-        isPlaying = media.isPlaying;
-        SetPlayingButton();
-        volume = media.GetVolume();
-    }
-    private void ToggleIsPlaying()
-    {
-        media.SetPlayingStatus(!isPlaying);
-        isPlaying = media.isPlaying;
-        SetPlayingButton();
-        isPlayingDisplay = media.GetPlayingStatus();
-    }
-    private void SetPlayingButton()
-    {
-        if(isPlaying)
+        protected override void OnInitialized()
         {
-            btnPlayingDisplay = "Pause";
+            base.OnInitialized();
+            isPlayingDisplay = media.GetPlayingStatus();
+            isPlaying = media.isPlaying;
+            SetPlayingButton();
+            volume = media.GetVolume();
         }
-        else
+        private void ToggleIsPlaying()
         {
-            btnPlayingDisplay = "Play";
+            media.SetPlayingStatus(!isPlaying);
+            isPlaying = media.isPlaying;
+            SetPlayingButton();
+            isPlayingDisplay = media.GetPlayingStatus();
         }
-    }
+        private void SetPlayingButton()
+        {
+            if(isPlaying)
+            {
+                btnPlayingDisplay = "Pause";
+            }
+            else
+            {
+                btnPlayingDisplay = "Play";
+            }
+        }
+        private void Previous()
+        {
+            media.PreviousSong();
+        }
+        private void Next()
+        {
+            media.NextSong();
+        }
 }
