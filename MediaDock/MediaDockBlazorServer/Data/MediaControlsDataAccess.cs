@@ -2,6 +2,10 @@
 {
     public class MediaControlsDataAccess : IMediaControlsDataAccess
     {
+        public MediaControlsDataAccess()
+        {
+            //db calls to set values
+        }
         public bool isPlaying { get; set; }
 
         public string IsPlayingDisplay
@@ -37,6 +41,18 @@
         public void SetVolume(float volume)
         {
             Volume = volume;
+        }
+
+        public void PreviousSong()
+        {
+            //db call
+            throw new System.NotImplementedException();
+        }
+
+        public void NextSong()
+        {
+            //db call
+            throw new System.NotImplementedException();
         }
     }
 }

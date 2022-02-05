@@ -8,5 +8,7 @@
         float GetVolume();
         void SetPlayingStatus(bool status);
         void SetVolume(float volume);
+        void PreviousSong();
+        void NextSong();
     }
 }
