@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowsAudio", "WindowsAudi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaDockBlazorServer", "MediaDockBlazorServer\MediaDockBlazorServer.csproj", "{BBD80FF6-C3D0-4620-9ECD-5733294691E3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaDockAPI", "MediaDockAPI\MediaDockAPI.csproj", "{866DA7C1-66B1-47CA-8AF6-936C54BF1785}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{BBD80FF6-C3D0-4620-9ECD-5733294691E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BBD80FF6-C3D0-4620-9ECD-5733294691E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BBD80FF6-C3D0-4620-9ECD-5733294691E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{866DA7C1-66B1-47CA-8AF6-936C54BF1785}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{866DA7C1-66B1-47CA-8AF6-936C54BF1785}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{866DA7C1-66B1-47CA-8AF6-936C54BF1785}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{866DA7C1-66B1-47CA-8AF6-936C54BF1785}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
