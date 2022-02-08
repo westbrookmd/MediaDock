@@ -1,9 +1,6 @@
 ﻿@page "/counter"
 @page "/counter/{StarterValue:int}"
 
-@using System.Text.Json
-@inject IHttpClientFactory Factory
-
 <h1>Counter</h1>
 
 <p>Current count: @currentCount</p>
@@ -11,8 +8,6 @@
 
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
-
-<button class="btn btn-primary" @onclick="Weather">Get Weather</button>
 
 @code {
     [Parameter]
@@ -32,15 +27,5 @@
     private void IncrementCount()
     {
         currentCount++;
-    }
-    private async Task Weather()
-    {
-        var client = Factory.CreateClient();
-        client.BaseAddress = new Uri("https://localhost:44329/");
-        var result = await client.GetAsync("WeatherForecast");
-        result.EnsureSuccessStatusCode();
-        weather = JsonDocument.Parse(await result.Content.ReadAsStringAsync())
-        .RootElement[0].GetProperty("summary").ToString();
-
     }
 }
