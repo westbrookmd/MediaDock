@@ -24,6 +24,41 @@ namespace MediaDockAPI.Controllers
             return "id " + id;
         }
 
+        [HttpGet]
+        public string GetPlayingStatus()
+        {
+            // get from db for authorized user
+            int playing = 0;
+
+            // calculate response
+            string status = "";
+            if (playing == 0)
+            {
+                status = "paused";
+            }
+            else
+            {
+                status = "playing";
+            }
+            return status;
+        }
+
+        [HttpPost]
+        public void SetPlayingStatus(string status)
+        {
+            int playing;
+            // calculate response
+            if (status == "paused")
+            {
+                playing = 0;
+            }
+            else
+            {
+                playing = 1;
+            }
+            //db call to set playing status
+        }
+
         // POST api/<MediaStatusController>
         [HttpPost]
         public void Post([FromBody] string value)
