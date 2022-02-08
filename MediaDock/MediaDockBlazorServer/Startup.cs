@@ -27,6 +27,7 @@ namespace MediaDockBlazorServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHttpClient();
+            services.AddSignalR();
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
@@ -54,6 +55,7 @@ namespace MediaDockBlazorServer
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHub<MediaControlsHub>(MediaControlsHub.HubUrl);
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });

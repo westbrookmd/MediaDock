@@ -2,6 +2,8 @@
 
 @using MediaDockBlazorServer.Data
 @inject IMediaControlsDataAccess media
+@inject NavigationManager navigationManager
+@using Microsoft.AspNetCore.SignalR.Client;
 
 <h1>Media Control</h1>
 
@@ -21,44 +23,129 @@ else
     </div>
 }
 
-        @code {
-        public bool isPlaying;
-        public string isPlayingDisplay;
-        public string btnPlayingDisplay;
-        private float volume;
+@code {
+    public bool isPlaying;
+    public string isPlayingDisplay;
+    public string btnPlayingDisplay;
+    private float volume;
 
-        protected override void OnInitialized()
+
+    // flag to indicate chat status
+    private bool _isChatting = false;
+
+    // name of the user who will be chatting
+    private string _username;
+
+    // on-screen message
+    private string _message;
+
+    // new message input
+    private string _newMessage;
+
+    // list of messages in chat
+    private List<Message> _messages = new List<Message>();
+    private string _hubUrl;
+    private HubConnection _hubConnection;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        isPlayingDisplay = media.GetPlayingStatus();
+        isPlaying = media.isPlaying;
+        SetPlayingButton();
+        volume = media.GetVolume();
+    }
+    private void ToggleIsPlaying()
+    {
+        media.SetPlayingStatus(!isPlaying);
+        isPlaying = media.isPlaying;
+        SetPlayingButton();
+        isPlayingDisplay = media.GetPlayingStatus();
+    }
+    private void SetPlayingButton()
+    {
+        if(isPlaying)
         {
-            base.OnInitialized();
-            isPlayingDisplay = media.GetPlayingStatus();
-            isPlaying = media.isPlaying;
-            SetPlayingButton();
-            volume = media.GetVolume();
+            btnPlayingDisplay = "Pause";
         }
-        private void ToggleIsPlaying()
+        else
         {
-            media.SetPlayingStatus(!isPlaying);
-            isPlaying = media.isPlaying;
-            SetPlayingButton();
-            isPlayingDisplay = media.GetPlayingStatus();
+            btnPlayingDisplay = "Play";
         }
-        private void SetPlayingButton()
+    }
+    private void Previous()
+    {
+        media.PreviousSong();
+    }
+    private void Next()
+    {
+        media.NextSong();
+    }
+    public async Task Chat()
+    {
+        string baseUrl = navigationManager.BaseUri;
+
+        _hubUrl = baseUrl.TrimEnd('/') + MediaControlsHub.HubUrl;
+
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(_hubUrl)
+            .Build();
+
+        _hubConnection.On<string, string>("Broadcast", BroadcastMessage);
+
+        await _hubConnection.StartAsync();
+
+        await SendAsync($"[Notice] {_username} joined chat room.");
+    }
+    public void BroadcastMessage(string name, string message)
+    {
+        bool isMine = name.Equals(_username, StringComparison.OrdinalIgnoreCase);
+
+        _messages.Add(new Message(name, message, isMine));
+
+        // Inform blazor the UI needs updating
+        StateHasChanged();
+    }
+    
+    private async Task DisconnectAsync()
+    {
+        if (_isChatting)
         {
-            if(isPlaying)
-            {
-                btnPlayingDisplay = "Pause";
-            }
-            else
-            {
-                btnPlayingDisplay = "Play";
-            }
+            await SendAsync($"[Notice] {_username} left chat room.");
+
+            await _hubConnection.StopAsync();
+            await _hubConnection.DisposeAsync();
+
+            _hubConnection = null;
+            _isChatting = false;
         }
-        private void Previous()
+    }
+
+    private async Task SendAsync(string message)
+    {
+        if (_isChatting && !string.IsNullOrWhiteSpace(message))
         {
-            media.PreviousSong();
+            await _hubConnection.SendAsync("Broadcast", _username, message);
+
+            _newMessage = string.Empty;
         }
-        private void Next()
+    }
+
+    private class Message
+    {
+        public Message(string username, string body, bool mine)
         {
-            media.NextSong();
+            Username = username;
+            Body = body;
+            Mine = mine;
         }
+
+        public string Username { get; set; }
+        public string Body { get; set; }
+        public bool Mine { get; set; }
+
+        public bool IsNotice => Body.StartsWith("[Notice]");
+
+        public string CSS => Mine ? "sent" : "received";
+    }
 }
