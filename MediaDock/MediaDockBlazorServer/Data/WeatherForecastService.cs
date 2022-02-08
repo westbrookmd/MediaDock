@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,11 +11,18 @@ namespace MediaDockBlazorServer.Data
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
+        private readonly IConfiguration _config;
+
+        public WeatherForecastService(IConfiguration config)
+        {
+            _config = config;
+        }
 
         public Task<WeatherForecast[]> GetForecastAsync(DateTime startDate)
         {
             var rng = new Random();
-            return Task.FromResult(Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            int upper = _config.GetValue<int>("WeatherForecast:ForecastDays");
+            return Task.FromResult(Enumerable.Range(upper, upper).Select(index => new WeatherForecast
             {
                 Date = startDate.AddDays(index),
                 TemperatureC = rng.Next(-20, 55),
