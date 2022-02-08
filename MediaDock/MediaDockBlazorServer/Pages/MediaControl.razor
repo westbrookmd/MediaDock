@@ -17,7 +17,7 @@ else
     <p>The media is currently @isPlayingDisplay. The volume is @volume.</p>
     <div class="btn-group" role="group" aria-label="Media Controls">
         <button class="btn btn-outline-primary" @onclick="Previous">Previous</button>
-        <button class="btn btn-outline-primary" @onclick="ToggleIsPlaying">@btnPlayingDisplay</button>
+        <button class="btn btn-outline-primary" @onclick="@ChangePlayingStatus">@btnPlayingDisplay</button>
         <button class="btn btn-outline-primary" @onclick="Next">Next</button>
                 <button class="btn btn-outline-primary" @onclick="@MediaChat">StartChat</button>
 
@@ -44,6 +44,7 @@ else
 
         _hubConnection.On<string, string>("Broadcast", BroadcastMessage);
         _hubConnection.On<float>("BroadcastVolume", BroadcastVolume);
+        _hubConnection.On<bool>("BroadcastIsPlaying", BroadcastIsPlaying);
 
         await _hubConnection.StartAsync();
     }
@@ -66,6 +67,15 @@ else
     {
         Console.WriteLine(_name + " New volume of : " + newVolume);
         volume = newVolume;
+        StateHasChanged();
+    }
+    private void BroadcastIsPlaying(bool newPlayingStatus)
+    {
+        Console.WriteLine(_name + " New playing status of : " + newPlayingStatus);
+        isPlaying = newPlayingStatus;
+        _media.SetPlayingStatus(isPlaying);
+        SetPlayingButton();
+        isPlayingDisplay = _media.GetPlayingStatus();
         StateHasChanged();
     }
 
@@ -107,13 +117,17 @@ else
     private async Task ChangeVolume()
     {
         _media.SetVolume(volume);
-        //await SendAsync("volume: " + volume);
         await _hubConnection.SendAsync("VolumeChange", volume);
+    }
+    private async Task ChangePlayingStatus()
+    {
+        ToggleIsPlaying();
+        await _hubConnection.SendAsync("PlayingStatusChange", isPlaying);
     }
 
         private async Task SendAsync(string message)
     {
-            await _hubConnection.SendAsync("Broadcast", _name, message);
+        await _hubConnection.SendAsync("Broadcast", _name, message);
 
     }
 }

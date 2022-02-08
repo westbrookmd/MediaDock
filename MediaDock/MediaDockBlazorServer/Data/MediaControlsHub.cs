@@ -18,6 +18,10 @@ namespace MediaDockBlazorServer.Data
         {
             await Clients.All.SendAsync("BroadcastVolume", volume);
         }
+        public async Task PlayingStatusChange(bool playingStatus)
+        {
+            await Clients.All.SendAsync("BroadcastIsPlaying", playingStatus);
+        }
 
         public override Task OnConnectedAsync()
         {
