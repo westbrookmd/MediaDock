@@ -6,11 +6,13 @@ namespace MediaDockBlazorServer.Data
 {
     public class MediaControlsHub : Hub
     {
-        public const string HubUrl = "/chat";
+        public const string HubUrl = "/media";
 
+        // trusts the client to send the proper username
+        // TODO: fix this - not secure
         public async Task Broadcast(string username, string message)
         {
-            await Clients.All.SendAsync("Broadcast", username, message);
+            await Clients.User(Context.ConnectionId).SendAsync("Broadcast", username, message);
         }
 
         public override Task OnConnectedAsync()

@@ -55,6 +55,7 @@ namespace MediaDockBlazorServer
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
+                endpoints.MapHub<MediaControlsHub>("/media");
                 endpoints.MapFallbackToPage("/_Host");
             });
         }
