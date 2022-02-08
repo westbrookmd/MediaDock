@@ -12,7 +12,7 @@ namespace MediaDockBlazorServer.Data
         // TODO: fix this - not secure
         public async Task Broadcast(string username, string message)
         {
-            await Clients.User(Context.ConnectionId).SendAsync("Broadcast", username, message);
+            await Clients.All.SendAsync("Broadcast", username, message);
         }
 
         public override Task OnConnectedAsync()
