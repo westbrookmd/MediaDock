@@ -1,10 +1,17 @@
-﻿namespace MediaDockBlazorServer.Data
+﻿using Microsoft.Extensions.Logging;
+
+namespace MediaDockBlazorServer.Data
 {
     public class MediaControlsDataAccess : IMediaControlsDataAccess
     {
-        public MediaControlsDataAccess()
+        private readonly ILogger<MediaControlsDataAccess> _log;
+
+        public MediaControlsDataAccess(ILogger <MediaControlsDataAccess> log)
         {
+            _log = log;
+
             //db calls to set values
+
         }
         public bool isPlaying { get; set; }
 
@@ -20,7 +27,6 @@
                 {
                     return "Paused";
                 }
-                
             }
         }
 
@@ -28,18 +34,22 @@
 
         public string GetPlayingStatus()
         {
+            _log.LogInformation("Getting the playing status.");
             return IsPlayingDisplay;
         }
         public void SetPlayingStatus(bool status)
         {
+            _log.LogInformation("Setting the playing status to {newPlayStatus}.", status);
             isPlaying = status;
         }
         public float GetVolume()
         {
+            _log.LogInformation("Getting the volume.");
             return Volume;
         }
         public void SetVolume(float volume)
         {
+            _log.LogInformation("Setting the volume to {newVolume}.", volume);
             Volume = volume;
         }
 
