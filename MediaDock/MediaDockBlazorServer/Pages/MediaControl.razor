@@ -39,10 +39,11 @@ else
     public async Task MediaChat()
     {
         _hubConnection = new HubConnectionBuilder()
-                .WithUrl( navigationManager.BaseUri.TrimEnd('/') + "/media")
+                .WithUrl(navigationManager.BaseUri.TrimEnd('/') + "/media")
                 .Build();
 
         _hubConnection.On<string, string>("Broadcast", BroadcastMessage);
+        _hubConnection.On<float>("BroadcastVolume", BroadcastVolume);
 
         await _hubConnection.StartAsync();
     }
@@ -57,7 +58,14 @@ else
             float newVolume = float.Parse(message.Substring(newVolumeIndex));
             volume = newVolume;
         }
+
         // Inform blazor the UI needs updating
+        StateHasChanged();
+    }
+    private void BroadcastVolume(float newVolume)
+    {
+        Console.WriteLine(_name + " New volume of : " + newVolume);
+        volume = newVolume;
         StateHasChanged();
     }
 
@@ -99,7 +107,8 @@ else
     private async Task ChangeVolume()
     {
         _media.SetVolume(volume);
-        await SendAsync("volume: " + volume);
+        //await SendAsync("volume: " + volume);
+        await _hubConnection.SendAsync("VolumeChange", volume);
     }
 
         private async Task SendAsync(string message)

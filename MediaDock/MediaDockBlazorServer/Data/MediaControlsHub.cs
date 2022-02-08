@@ -14,6 +14,10 @@ namespace MediaDockBlazorServer.Data
         {
             await Clients.All.SendAsync("Broadcast", username, message);
         }
+        public async Task VolumeChange(float volume)
+        {
+            await Clients.All.SendAsync("BroadcastVolume", volume);
+        }
 
         public override Task OnConnectedAsync()
         {
