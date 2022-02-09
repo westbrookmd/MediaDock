@@ -4,7 +4,7 @@ This is a light-weight WPF application to control audio playback on Windows.
 Experimental: This application can be connected to a SignalR connection to handle remote control from nearly any device. A SignalR service is not currently being hosted for public usage of this but feel free to test this locally.
 
 ![MediaDock Screenshot](https://i.imgur.com/0vYMCI7.png)
-![MediaDock SignalR Showcase](https://i.imgur.com/E3Cjinq.gif)
+![MediaDock SignalR Showcase](https://i.imgur.com/CtnHSKe.gif)
 
 # Roadmap
 Basic functionality I want MediaDock to have:
