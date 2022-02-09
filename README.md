@@ -20,7 +20,7 @@ Basic functionality I want MediaDock to have:
 Extra features that would be nice for MediaDock to have:
 * Background selection
 * ~~Toggle always on top~~
-* ~~Remote Control via SignalR ~~
+* ~~Remote Control via SignalR~~
 * Application-specific Volume Control
 * Global hotkeys (hotkeys that work when the app isn't focused)
 
