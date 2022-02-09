@@ -73,6 +73,9 @@ namespace MediaDock
                 connection.StartAsync();
                 connection.On<float>("BroadcastVolume", BroadcastVolume);
                 connection.On<bool>("BroadcastIsPlaying", BroadcastIsPlaying);
+                // TODO: implement in mediacontrolshub and Blazor Server
+                //connection.On<bool>("BroadcastPreviousSong", BroadcastPreviousSong);
+                //connection.On<bool>("BroadcastNextSong", BroadcastNextSong);
             }
         }
 
@@ -261,11 +264,13 @@ namespace MediaDock
         {
             Core.PlayPauseSong();
             // TODO: get proper playing status
+            // check if specific application is playing volume
             await connection.SendAsync("PlayingStatusChange", false);
         }
         private async void VolumeSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             await connection.SendAsync("VolumeChange", (float)VolumeSlider.Value);
+            // also triggers value changed
         }
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> newVolume)
         {
