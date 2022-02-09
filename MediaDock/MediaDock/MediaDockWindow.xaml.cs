@@ -18,6 +18,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using WindowsAudio;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace MediaDock
 {
@@ -37,6 +38,8 @@ namespace MediaDock
         //Service
         Timer volumeUpdater;
 
+        HubConnection connection;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -46,7 +49,6 @@ namespace MediaDock
             {
                 GetSettings();
                 LoadWindowSettings(settings);
-
             }
             catch (Exception ex)
             {
@@ -62,7 +64,28 @@ namespace MediaDock
 
                 //start service to count time and refresh volume
                 volumeUpdater = MasterVolumeUpdater(settings.VolumeSliderUpdateInterval);
+
+                connection = new HubConnectionBuilder()
+                    .WithAutomaticReconnect()
+                    .WithUrl("https://localhost:5001/media")
+                    .Build();
+                connection.StartAsync();
+                connection.On<float>("BroadcastVolume", BroadcastVolume);
+                connection.On<bool>("BroadcastIsPlaying", BroadcastIsPlaying);
             }
+        }
+
+        private void BroadcastVolume(float newVolume)
+        {
+            Console.WriteLine("WPF" + " New volume of : " + newVolume);
+            VolumeSlider.Value = newVolume;
+            UpdateVolumeSlider();
+        }
+        private void BroadcastIsPlaying(bool newPlayingStatus)
+        {
+            Console.WriteLine("WPF" + " New playing status of : " + newPlayingStatus);
+            // TODO: change playing to the proper state
+            Core.PlayPauseSong();
         }
 
         private void GetSettings()
