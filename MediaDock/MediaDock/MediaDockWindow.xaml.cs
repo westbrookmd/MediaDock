@@ -32,12 +32,13 @@ namespace MediaDock
         public UserSettingsModel settings = new UserSettingsModel();
         public string settingsFilePath = Environment.CurrentDirectory + "\\Settings.ini";
 
-        //services settings
+        // service settings
         public float volumeSliderInterval;
 
-        //Service
+        // Services
         Timer volumeUpdater;
 
+        // SignalR
         HubConnection ?connection;
 
         public MainWindow()
@@ -78,12 +79,11 @@ namespace MediaDock
                     connection.On<float>("BroadcastVolume", BroadcastVolume);
                     connection.On<bool>("BroadcastIsPlaying", BroadcastIsPlaying);
                     // TODO: implement in mediacontrolshub and Blazor Server
-                    //connection.On<bool>("BroadcastPreviousSong", BroadcastPreviousSong);
-                    //connection.On<bool>("BroadcastNextSong", BroadcastNextSong);
+                    connection.On("BroadcastPreviousSong", BroadcastPreviousSong);
+                    connection.On("BroadcastNextSong", BroadcastNextSong);
                 }
             }
         }
-
         private void BroadcastVolume(float newVolume)
         {
             Console.WriteLine("WPF" + " New volume of : " + newVolume);
@@ -96,7 +96,14 @@ namespace MediaDock
             // TODO: change playing to the proper state
             Core.PlayPauseSong();
         }
-
+        private static void BroadcastPreviousSong()
+        {
+            Core.PreviousSong();
+        }
+        private static void BroadcastNextSong()
+        {
+            Core.NextSong();
+        }
         private void GetSettings()
         {
             UserSettingsModel? settingsFile = ReadFromJsonFile<UserSettingsModel>(settingsFilePath);
@@ -109,7 +116,6 @@ namespace MediaDock
                 SetDefaultSettings();
             }
         }
-
         //https://stackoverflow.com/a/22425211/17573746
         public static T? ReadFromJsonFile<T>(string filePath) where T : new()
         {
@@ -126,7 +132,6 @@ namespace MediaDock
                     reader.Close();
             }
         }
-
         //https://stackoverflow.com/a/20623867/17573746
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -181,12 +186,10 @@ namespace MediaDock
                 contextMenu.IsOpen = true;
             }
         }
-
         public void Close_Window(object sender, System.EventArgs e)
         {
             Application.Current.MainWindow.Close();
         }
-
         public void SaveSettings()
         {
 
@@ -201,7 +204,6 @@ namespace MediaDock
                 MessageBox.Show(exception.Message, exception.Message);
             }
         }
-
         public async void Start_Connection(object sender, System.EventArgs e)
         {
             if(connection != null && connection.State == HubConnectionState.Disconnected)
@@ -218,7 +220,6 @@ namespace MediaDock
             }
 
         }
-
         public void Show_Settings_Window(object sender, System.EventArgs e)
         {
             this.Hide();
@@ -254,7 +255,6 @@ namespace MediaDock
             Application.Current.Resources.Remove("Settings");
             this.Show();
         }
-
         //https://stackoverflow.com/a/22425211/17573746
         public static void WriteToJsonFile<T>(string filePath, T objectToWrite, bool append = false) where T : new()
         {
@@ -271,14 +271,11 @@ namespace MediaDock
                     writer.Close();
             }
         }
-
         private void SetDefaultSettings()
         {
             UserSettingsModel defaultSettings = new UserSettingsModel();
             settings = defaultSettings;
         }
-            
-
         private static void LoadWindowSettings(UserSettingsModel s)
         {
             Window window = (Window)Application.Current.MainWindow;
@@ -286,7 +283,6 @@ namespace MediaDock
             window.WindowStartupLocation = s.WindowStartupLocation;
             window.ResizeMode = s.WindowResizeMode;
         }
-
         private void UpdateVolumeSlider()
         {
             //updating UI from thread other than the main thread
@@ -334,7 +330,6 @@ namespace MediaDock
                 MessageBox.Show(ex.Message, ex.StackTrace);
             }
         }
-
         private Timer MasterVolumeUpdater(float intervalInSeconds)
         {
             Timer timer = new Timer();
