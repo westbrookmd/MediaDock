@@ -60,7 +60,7 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Button Content="Play" Click="MediaPlayPause" Grid.Column="1" Grid.Row="1" >
+        <Button x:Name="PlayPause" Content="Pause" Click="MediaPlayPause" Grid.Column="1" Grid.Row="1" >
             <Button.Style>
                 <Style TargetType="Button">
                     <Setter Property="TextElement.FontFamily" Value="Fonts/#Dosis"/>

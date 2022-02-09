@@ -27,6 +27,7 @@ namespace MediaDock
     /// </summary>
     public partial class MainWindow : Window
     {
+        public bool isPlaying = true;
         //Settings variables
         //window settings
         public UserSettingsModel settings = new UserSettingsModel();
@@ -46,6 +47,7 @@ namespace MediaDock
             InitializeComponent();
             MouseDown += Window_MouseDown;
             UpdateVolumeSlider();
+            SetPlayPauseButton();
             try
             {
                 GetSettings();
@@ -94,7 +96,9 @@ namespace MediaDock
         {
             Console.WriteLine("WPF" + " New playing status of : " + newPlayingStatus);
             // TODO: change playing to the proper state
-            Core.PlayPauseSong();
+            isPlaying = newPlayingStatus;
+            SetPlayPauseButton();
+            Core.PlayPauseSong(newPlayingStatus);
         }
         private static void BroadcastPreviousSong()
         {
@@ -302,15 +306,30 @@ namespace MediaDock
         }
         private async void MediaPlayPause(object sender, RoutedEventArgs e)
         {
-            Core.PlayPauseSong();
+            isPlaying = !isPlaying;
+            Core.PlayPauseSong(isPlaying);
+            SetPlayPauseButton();
             // TODO: get proper playing status
             // check if specific application is playing volume
-            if(connection != null)
+            if (connection != null)
             {
-                await connection.SendAsync("PlayingStatusChange", false);
+                await connection.SendAsync("PlayingStatusChange", isPlaying);
             }
-            
+
         }
+
+        private void SetPlayPauseButton()
+        {
+            if (isPlaying)
+            {
+                PlayPause.Content = "Pause";
+            }
+            else
+            {
+                PlayPause.Content = "Play";
+            }
+        }
+
         private async void VolumeSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             if (connection != null)

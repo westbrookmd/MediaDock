@@ -15,9 +15,11 @@ namespace WindowsAudio
         private static extern void keybd_event(byte virtualKey, byte scanCode, uint flags, IntPtr extraInfo);
         public const int VK_MEDIA_NEXT_TRACK = 0xB0;
         public const int VK_MEDIA_PREV_TRACK = 0xB1;
+        public const int VK_MEDIA_STOP = 0xB2;
         public const int VK_MEDIA_PLAY_PAUSE = 0xB3;
         public const int KEYEVENTF_EXTENTEDKEY = 1;
         public const int KEYEVENTF_KEYUP = 0;
+        
 
         public static void PreviousSong()
         {
@@ -31,13 +33,23 @@ namespace WindowsAudio
             keybd_event(VK_MEDIA_NEXT_TRACK, 0, KEYEVENTF_EXTENTEDKEY, IntPtr.Zero);
         }
 
-        public static void PlayPauseSong()
+        public static void PlayPauseSong(bool newPlayingStatus)
         {
-            //pause or play music
-            keybd_event(VK_MEDIA_PLAY_PAUSE, 0, KEYEVENTF_EXTENTEDKEY, IntPtr.Zero);
+            if(newPlayingStatus)
+            {
+                //toggles the media -- there isn't an explicit 'play' media key to my knowledge
+                keybd_event(VK_MEDIA_PLAY_PAUSE, 0, KEYEVENTF_EXTENTEDKEY, IntPtr.Zero);
+            }
+            else
+            {
+                //pauses the media
+                keybd_event(VK_MEDIA_STOP, 0, KEYEVENTF_EXTENTEDKEY, IntPtr.Zero);
+            }
+            
+           
         }
 
-        public static void ToggleMasterAudioMute()
+            public static void ToggleMasterAudioMute()
         {
             AudioManager.ToggleMasterVolumeMute();
         }
