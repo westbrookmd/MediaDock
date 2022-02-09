@@ -38,7 +38,7 @@ namespace MediaDock
         //Service
         Timer volumeUpdater;
 
-        HubConnection connection;
+        HubConnection ?connection;
 
         public MainWindow()
         {
@@ -64,18 +64,23 @@ namespace MediaDock
 
                 //start service to count time and refresh volume
                 volumeUpdater = MasterVolumeUpdater(settings.VolumeSliderUpdateInterval);
-
-                connection = new HubConnectionBuilder()
+                if(settings.RemoteControl)
+                {
+                    connection = new HubConnectionBuilder()
                     .WithAutomaticReconnect()
                     // TODO: put in keyvault or something else
-                    .WithUrl("https://localhost:5001/media")
+                    .WithUrl(settings.ConnectionString)
                     .Build();
-                connection.StartAsync();
-                connection.On<float>("BroadcastVolume", BroadcastVolume);
-                connection.On<bool>("BroadcastIsPlaying", BroadcastIsPlaying);
-                // TODO: implement in mediacontrolshub and Blazor Server
-                //connection.On<bool>("BroadcastPreviousSong", BroadcastPreviousSong);
-                //connection.On<bool>("BroadcastNextSong", BroadcastNextSong);
+                    if(settings.AutomaticallyConnect)
+                    {
+                        connection.StartAsync();
+                    }
+                    connection.On<float>("BroadcastVolume", BroadcastVolume);
+                    connection.On<bool>("BroadcastIsPlaying", BroadcastIsPlaying);
+                    // TODO: implement in mediacontrolshub and Blazor Server
+                    //connection.On<bool>("BroadcastPreviousSong", BroadcastPreviousSong);
+                    //connection.On<bool>("BroadcastNextSong", BroadcastNextSong);
+                }
             }
         }
 
@@ -134,6 +139,28 @@ namespace MediaDock
                 //context menu goes here
                 ContextMenu contextMenu = new ContextMenu();
 
+                //signalr connection
+                if(connection != null && connection.State == HubConnectionState.Disconnected)
+                {
+                    MenuItem menuItemConnect = new MenuItem
+                    {
+                        Header = "Connect"
+                    };
+                    menuItemConnect.Click += Start_Connection;
+                    contextMenu.Items.Add(menuItemConnect);
+                }
+                else if(connection != null && connection.State == HubConnectionState.Connected)
+                {
+                    MenuItem menuItemDisconnect = new MenuItem
+                    {
+                        Header = "Disconnect"
+                    };
+                    menuItemDisconnect.Click += Stop_Connection;
+                    contextMenu.Items.Add(menuItemDisconnect);
+                }
+                
+                
+
                 //saving
                 MenuItem menuItemSettings = new MenuItem
                 {
@@ -173,6 +200,23 @@ namespace MediaDock
 
                 MessageBox.Show(exception.Message, exception.Message);
             }
+        }
+
+        public async void Start_Connection(object sender, System.EventArgs e)
+        {
+            if(connection != null && connection.State == HubConnectionState.Disconnected)
+            {
+                await connection.StartAsync();
+            }
+            
+        }
+        public async void Stop_Connection(object sender, System.EventArgs e)
+        {
+            if (connection != null && connection.State == HubConnectionState.Connected)
+            {
+                await connection.StopAsync();
+            }
+
         }
 
         public void Show_Settings_Window(object sender, System.EventArgs e)
@@ -265,12 +309,19 @@ namespace MediaDock
             Core.PlayPauseSong();
             // TODO: get proper playing status
             // check if specific application is playing volume
-            await connection.SendAsync("PlayingStatusChange", false);
+            if(connection != null)
+            {
+                await connection.SendAsync("PlayingStatusChange", false);
+            }
+            
         }
         private async void VolumeSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
-            await connection.SendAsync("VolumeChange", (float)VolumeSlider.Value);
-            // also triggers value changed
+            if (connection != null)
+            {
+                await connection.SendAsync("VolumeChange", (float)VolumeSlider.Value);
+                // also triggers value changed
+            }
         }
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> newVolume)
         {
