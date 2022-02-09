@@ -13,7 +13,7 @@ Basic functionality I want MediaDock to have:
 * ~~Master Volume Control~~
 * ~~Window always on top~~
 * ~~Save/Load settings to/from a file~~
-* Pause/Play button toggles based on Windows media playback
+* ~~Pause/Play button toggles based on audio status~~
 * Add Custom Styling
 
 # Additional Features
