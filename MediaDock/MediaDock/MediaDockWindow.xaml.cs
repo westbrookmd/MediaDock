@@ -67,6 +67,7 @@ namespace MediaDock
 
                 connection = new HubConnectionBuilder()
                     .WithAutomaticReconnect()
+                    // TODO: put in keyvault or something else
                     .WithUrl("https://localhost:5001/media")
                     .Build();
                 connection.StartAsync();
@@ -256,9 +257,15 @@ namespace MediaDock
         {
             Core.NextSong();
         }
-        private void MediaPlayPause(object sender, RoutedEventArgs e)
+        private async void MediaPlayPause(object sender, RoutedEventArgs e)
         {
             Core.PlayPauseSong();
+            // TODO: get proper playing status
+            await connection.SendAsync("PlayingStatusChange", false);
+        }
+        private async void VolumeSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            await connection.SendAsync("VolumeChange", (float)VolumeSlider.Value);
         }
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> newVolume)
         {
@@ -269,8 +276,9 @@ namespace MediaDock
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.StackTrace);
-            }        
+            }
         }
+
         private Timer MasterVolumeUpdater(float intervalInSeconds)
         {
             Timer timer = new Timer();
@@ -281,5 +289,7 @@ namespace MediaDock
             timer.Enabled = true;
             return timer;
         }
+
+
     }
 }
