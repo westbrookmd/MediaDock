@@ -14,5 +14,10 @@ namespace MediaDock.Models
         public ResizeMode WindowResizeMode { get; set; } = ResizeMode.NoResize;
         public float VolumeSliderUpdateInterval { get; set; } = 4;
 
+        // Connection Properties
+        public bool RemoteControl { get; set; } = true;
+        public string ConnectionString { get; set; } = "https://localhost:5001/media"; //placeholder
+        public bool AutomaticallyConnect { get; set; } = true;
+
     }
 }

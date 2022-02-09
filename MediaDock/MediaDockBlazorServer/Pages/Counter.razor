@@ -1,0 +1,30 @@
+﻿@page "/counter"
+@page "/counter/{StarterValue:int}"
+
+<h1>Counter</h1>
+
+<p>Current count: @currentCount</p>
+<p>Current weather: @weather</p>
+
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    [Parameter]
+    public int StarterValue { get; set; }
+
+    private int currentCount = 0;
+    private string weather = "";
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        currentCount = StarterValue;
+    }
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}

@@ -1,0 +1,131 @@
+﻿@page "/MediaControl"
+@using MediaDockBlazorServer.Data
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager navigationManager
+@inject IMediaControlsDataAccess _media
+
+<h1>Media Control</h1>
+
+<p>This is a way to control media on your computer.</p>
+
+@if (_media == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <p>The media is currently @isPlayingDisplay. The volume is @volume.</p>
+    <div class="btn-group" role="group" aria-label="Media Controls">
+        <button class="btn btn-outline-primary" @onclick="@Previous">Previous</button>
+        <button class="btn btn-outline-primary" @onclick="@ChangePlayingStatus">@btnPlayingDisplay</button>
+        <button class="btn btn-outline-primary" @onclick="@Next">Next</button>
+                @*<button class="btn btn-outline-primary" @onclick="@MediaChat">StartChat</button>*@
+
+        <input type="range" @onclick="ChangeVolume" @bind-value="volume">
+    </div>
+}
+
+@code {
+    public bool isPlaying;
+    public string isPlayingDisplay;
+    public string btnPlayingDisplay;
+    private float volume;
+
+    private string _hubUrl;
+    private HubConnection _hubConnection;
+    Random random = new Random();
+    private string _name;
+
+    public async Task MediaChat()
+    {
+        _hubConnection = new HubConnectionBuilder()
+                .WithUrl(navigationManager.BaseUri.TrimEnd('/') + "/media")
+                .WithAutomaticReconnect()
+                .Build();
+
+        _hubConnection.On<string, string>("Broadcast", BroadcastMessage);
+        _hubConnection.On<float>("BroadcastVolume", BroadcastVolume);
+        _hubConnection.On<bool>("BroadcastIsPlaying", BroadcastIsPlaying);
+        await _hubConnection.StartAsync();
+    }
+    private void BroadcastMessage(string name, string message)
+    {
+        Console.WriteLine(name + " just sent " + message);
+    }
+    private void BroadcastVolume(float newVolume)
+    {
+        Console.WriteLine(_name + " New volume of : " + newVolume);
+        volume = newVolume;
+        StateHasChanged();
+    }
+    private void BroadcastIsPlaying(bool newPlayingStatus)
+    {
+        Console.WriteLine(_name + " New playing status of : " + newPlayingStatus);
+        isPlaying = newPlayingStatus;
+        _media.SetPlayingStatus(isPlaying);
+        SetPlayingButton();
+        isPlayingDisplay = _media.GetPlayingStatus();
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        isPlayingDisplay = _media.GetPlayingStatus();
+        isPlaying = _media.isPlaying;
+        SetPlayingButton();
+        volume = _media.GetVolume();
+        _name = random.Next().ToString();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        if(_hubConnection == null)
+        {
+            await MediaChat();
+        }
+    }
+    
+    private void ToggleIsPlaying()
+    {
+        _media.SetPlayingStatus(!isPlaying);
+        isPlaying = _media.isPlaying;
+        SetPlayingButton();
+        isPlayingDisplay = _media.GetPlayingStatus();
+    }
+    private void SetPlayingButton()
+    {
+        if(isPlaying)
+        {
+            btnPlayingDisplay = "Pause";
+        }
+        else
+        {
+            btnPlayingDisplay = "Play";
+        }
+    }
+    private async Task Previous()
+    {
+        _media.PreviousSong();
+        await _hubConnection.SendAsync("PreviousSong");
+    }
+    private async Task Next()
+    {
+        _media.NextSong();
+        await _hubConnection.SendAsync("NextSong");
+    }
+    private async Task ChangeVolume()
+    {
+        _media.SetVolume(volume);
+        await _hubConnection.SendAsync("VolumeChange", volume);
+    }
+    private async Task ChangePlayingStatus()
+    {
+        ToggleIsPlaying();
+        await _hubConnection.SendAsync("PlayingStatusChange", isPlaying);
+    }
+
+    private async Task SendAsync(string message)
+    {
+        await _hubConnection.SendAsync("Broadcast", _name, message);
+    }
+}

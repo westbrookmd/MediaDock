@@ -113,7 +113,8 @@
         <Slider x:Name="VolumeSlider" Background="White" ValueChanged="VolumeSlider_ValueChanged"
                 Grid.ColumnSpan="3" Grid.Row="4" TickFrequency="5" TickPlacement="BottomRight"
                 IsSnapToTickEnabled="True" Maximum="100" VerticalAlignment="Center"
-                AutoToolTipPlacement="BottomRight"
+                AutoToolTipPlacement="BottomRight" Thumb.DragCompleted="VolumeSlider_DragCompleted" 
+                LargeChange="0" Focusable="false"
                 />
     </Grid>
 </Window>
