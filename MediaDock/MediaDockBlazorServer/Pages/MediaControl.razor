@@ -16,9 +16,9 @@ else
 {
     <p>The media is currently @isPlayingDisplay. The volume is @volume.</p>
     <div class="btn-group" role="group" aria-label="Media Controls">
-        <button class="btn btn-outline-primary" @onclick="Previous">Previous</button>
+        <button class="btn btn-outline-primary" @onclick="@Previous">Previous</button>
         <button class="btn btn-outline-primary" @onclick="@ChangePlayingStatus">@btnPlayingDisplay</button>
-        <button class="btn btn-outline-primary" @onclick="Next">Next</button>
+        <button class="btn btn-outline-primary" @onclick="@Next">Next</button>
                 @*<button class="btn btn-outline-primary" @onclick="@MediaChat">StartChat</button>*@
 
         <input type="range" @onclick="ChangeVolume" @bind-value="volume">
@@ -103,13 +103,15 @@ else
             btnPlayingDisplay = "Play";
         }
     }
-    private void Previous()
+    private async Task Previous()
     {
         _media.PreviousSong();
+        await _hubConnection.SendAsync("PreviousSong");
     }
-    private void Next()
+    private async Task Next()
     {
         _media.NextSong();
+        await _hubConnection.SendAsync("NextSong");
     }
     private async Task ChangeVolume()
     {
@@ -122,9 +124,8 @@ else
         await _hubConnection.SendAsync("PlayingStatusChange", isPlaying);
     }
 
-        private async Task SendAsync(string message)
+    private async Task SendAsync(string message)
     {
         await _hubConnection.SendAsync("Broadcast", _name, message);
-
     }
 }

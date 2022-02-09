@@ -55,14 +55,14 @@ namespace MediaDockBlazorServer.Data
 
         public void PreviousSong()
         {
-            //db call
-            throw new System.NotImplementedException();
+            //TODO: db call
+            _log.LogInformation("Sending previous song command.");
         }
 
         public void NextSong()
         {
-            //db call
-            throw new System.NotImplementedException();
+            //TODO: db call
+            _log.LogInformation("Sending next song command.");
         }
     }
 }

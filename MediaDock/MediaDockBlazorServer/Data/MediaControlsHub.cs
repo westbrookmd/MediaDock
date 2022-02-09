@@ -22,7 +22,14 @@ namespace MediaDockBlazorServer.Data
         {
             await Clients.All.SendAsync("BroadcastIsPlaying", playingStatus);
         }
-
+        public async Task PreviousSong()
+        {
+            await Clients.All.SendAsync("BroadcastPreviousSong");
+        }
+        public async Task NextSong()
+        {
+            await Clients.All.SendAsync("BroadcastNextSong");
+        }
         public override Task OnConnectedAsync()
         {
             Console.WriteLine($"{Context.ConnectionId} connected");
