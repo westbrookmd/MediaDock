@@ -23,13 +23,23 @@ namespace MediaDock
     /// </summary>
     public partial class SettingsWindow : Window
     {
-        UserSettingsModel? _settings = Application.Current.Resources["Settings"] as UserSettingsModel;
-        public SettingsWindow(ref UserSettingsModel settings)
+        public UserSettingsModel? settings;
+        public SettingsWindow(ref UserSettingsModel _settings)
         {
+            settings = _settings;
             InitializeComponent();
             DataContext = settings;
-            UpdateUI(settings);
+            if (settings == null)
+            {
+                MessageBox.Show("Settings didn't load properly", "Settings Error");
+            }
+            else
+            {
+                UpdateUI(settings);
+            }
         }
+        
+        
 
         private void UpdateUI(UserSettingsModel settings)
         {
@@ -41,15 +51,28 @@ namespace MediaDock
 
         public void Save_Settings(object sender, System.EventArgs e)
         {
-            if (_settings != null)
+            if (settings != null)
             {
-                _settings.WindowIsAlwaysOnTop  = (bool)AlwaysOnTop.IsChecked;
-                _settings.WindowStartupLocation  = (WindowStartupLocation)StartupLocation.SelectedIndex;
-                _settings.WindowResizeMode  = (ResizeMode)ResizeMode.SelectedIndex;
-                _settings.VolumeSliderUpdateInterval  = (float)VolumeUpdateInterval.Value;
+                if (AlwaysOnTop.IsChecked != null)
+                {
+                    settings.WindowIsAlwaysOnTop = (bool)AlwaysOnTop.IsChecked;
+                }
+                else
+                {
+                    settings.WindowIsAlwaysOnTop = false;
+                }
+                settings.WindowStartupLocation  = (WindowStartupLocation)StartupLocation.SelectedIndex;
+                settings.WindowResizeMode  = (ResizeMode)ResizeMode.SelectedIndex;
+                if (VolumeUpdateInterval.Value != null)
+                {
+                    settings.VolumeSliderUpdateInterval = (float)VolumeUpdateInterval.Value;
+                }
+                else
+                {
+                    settings.VolumeSliderUpdateInterval = 4;
+                }
             }
-            Application.Current.Resources.Remove("Settings");
-            Application.Current.Resources.Add("Settings", _settings);
+            
             DialogResult = true;
         }
         public void Load_Settings(object sender, System.EventArgs e)
@@ -63,8 +86,8 @@ namespace MediaDock
                 UserSettingsModel? settingsFile = ReadFromJsonFile<UserSettingsModel>(settingsFilePath);
                 if (settingsFile != null)
                 {
-                    _settings = settingsFile;
-                    UpdateUI(_settings);
+                    settings = settingsFile;
+                    UpdateUI(settings);
                 }
                 else
                 {

@@ -227,9 +227,6 @@ namespace MediaDock
         public void Show_Settings_Window(object sender, System.EventArgs e)
         {
             this.Hide();
-            // HACK: using this gross way to pass information to other windows
-            Application.Current.Resources.Add("Settings", settings);
-            
             // open the settings window and give it our current settings
             SettingsWindow settingsWindow = new SettingsWindow(ref settings);
             
@@ -240,15 +237,6 @@ namespace MediaDock
             {
                 if(settingsUpdated.Value == true)
                 {
-                    // get the settings that were edited
-                    UserSettingsModel? _settings = Application.Current.Resources["Settings"] as UserSettingsModel;
-                    if (_settings != null)
-                    {
-                        settings = _settings;
-                    }
-                    // remove the resource to prevent accidental usage in other areas of the program
-                    Application.Current.Resources.Remove("Settings");
-
                     // save to the default file, update the UI, and update the services
                     SaveSettings();
                     LoadWindowSettings(settings);
@@ -256,7 +244,6 @@ namespace MediaDock
                     volumeUpdater = MasterVolumeUpdater(settings.VolumeSliderUpdateInterval);
                 }
             }
-            Application.Current.Resources.Remove("Settings");
             this.Show();
         }
         //https://stackoverflow.com/a/22425211/17573746
