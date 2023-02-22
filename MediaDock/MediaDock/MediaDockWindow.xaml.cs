@@ -13,10 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+
 using WindowsAudio;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -27,10 +24,18 @@ namespace MediaDock
     /// </summary>
     public partial class MainWindow : Window
     {
-        public bool isPlaying = true;
+        public bool IsPlaying
+        {
+            get { return IsPlaying; }
+            set
+            {
+                IsPlaying = value;
+                SetPlayPauseButton();
+            }
+        }
+
         //Settings variables
-        //window settings
-        public UserSettingsModel settings = new UserSettingsModel();
+        public UserSettingsModel _settings = new UserSettingsModel();
         public string settingsFilePath = Environment.CurrentDirectory + "\\Settings.ini";
 
         // service settings
@@ -40,41 +45,38 @@ namespace MediaDock
         Timer volumeUpdater;
 
         // SignalR
-        HubConnection ?connection;
+        readonly HubConnection ?connection;
 
         public MainWindow()
         {
             InitializeComponent();
             MouseDown += Window_MouseDown;
             UpdateVolumeSlider();
-            SetPlayPauseButton();
             try
             {
-                GetSettings();
-                LoadWindowSettings(settings);
+                _settings = GetSettings();
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Unable to load profile. Setting defaults.");
                 //set default settings
-                SetDefaultSettings();
-                //load default settings
-                LoadWindowSettings(settings);
+                _settings = SetDefaultSettings();
             }
             finally
             {
+                LoadWindowSettings(_settings);
                 //startup necessary services from profile/default settings
 
                 //start service to count time and refresh volume
-                volumeUpdater = MasterVolumeUpdater(settings.VolumeSliderUpdateInterval);
-                if(settings.RemoteControl)
+                volumeUpdater = MasterVolumeUpdater(_settings.VolumeSliderUpdateInterval);
+                if(_settings.RemoteControl)
                 {
                     connection = new HubConnectionBuilder()
                     .WithAutomaticReconnect()
                     // TODO: put in keyvault or something else
-                    .WithUrl(settings.ConnectionString)
+                    .WithUrl(_settings.ConnectionString)
                     .Build();
-                    if(settings.AutomaticallyConnect)
+                    if(_settings.AutomaticallyConnect)
                     {
                         connection.StartAsync();
                     }
@@ -96,8 +98,7 @@ namespace MediaDock
         {
             Console.WriteLine("WPF" + " New playing status of : " + newPlayingStatus);
             // TODO: change playing to the proper state
-            isPlaying = newPlayingStatus;
-            SetPlayPauseButton();
+            IsPlaying = newPlayingStatus;
             Core.PlayPauseSong(newPlayingStatus);
         }
         private static void BroadcastPreviousSong()
@@ -108,17 +109,19 @@ namespace MediaDock
         {
             Core.NextSong();
         }
-        private void GetSettings()
+        private UserSettingsModel GetSettings()
         {
+            UserSettingsModel settingsToReturn = new();
             UserSettingsModel? settingsFile = ReadFromJsonFile<UserSettingsModel>(settingsFilePath);
             if (settingsFile != null)
             {
-                settings = settingsFile;
+                settingsToReturn = settingsFile;
             }
             else
             {
-                SetDefaultSettings();
+                settingsToReturn = SetDefaultSettings();
             }
+            return settingsToReturn;
         }
         //https://stackoverflow.com/a/22425211/17573746
         public static T? ReadFromJsonFile<T>(string filePath) where T : new()
@@ -145,51 +148,75 @@ namespace MediaDock
             }
             else if(e.ChangedButton == MouseButton.Right)
             {
-                //context menu goes here
-                ContextMenu contextMenu = new ContextMenu();
-
-                //signalr connection
-                if(connection != null && connection.State == HubConnectionState.Disconnected)
-                {
-                    MenuItem menuItemConnect = new MenuItem
-                    {
-                        Header = "Connect"
-                    };
-                    menuItemConnect.Click += Start_Connection;
-                    contextMenu.Items.Add(menuItemConnect);
-                }
-                else if(connection != null && connection.State == HubConnectionState.Connected)
-                {
-                    MenuItem menuItemDisconnect = new MenuItem
-                    {
-                        Header = "Disconnect"
-                    };
-                    menuItemDisconnect.Click += Stop_Connection;
-                    contextMenu.Items.Add(menuItemDisconnect);
-                }
-                
-                
-
-                //saving
-                MenuItem menuItemSettings = new MenuItem
-                {
-                    Header = "Settings"
-                };
-                menuItemSettings.Click += Show_Settings_Window;
-                contextMenu.Items.Add(menuItemSettings);
-
-                //exit
-                MenuItem menuItemExit = new MenuItem
-                {
-                    Header = "Close MediaDock"
-                };
-                menuItemExit.Click += new RoutedEventHandler(Close_Window);
-                contextMenu.Items.Add(menuItemExit);
-
+                var contextMenu = CreateContextMenu();
                 //make the context menu visible
                 contextMenu.IsOpen = true;
             }
         }
+
+        private ContextMenu CreateContextMenu()
+        {
+            var contextMenu = new ContextMenu();
+
+            //signalr connection connect/disconnect
+            if (BuildConnectDisconnectMenuItem(out MenuItem menuItemToReturn))
+            {
+                contextMenu.Items.Add(menuItemToReturn);
+            }
+
+            //saving
+            MenuItem menuItemSettings = new MenuItem
+            {
+                Header = "Settings"
+            };
+            menuItemSettings.Click += Show_Settings_Window;
+            contextMenu.Items.Add(menuItemSettings);
+
+            //exit
+            MenuItem menuItemExit = new MenuItem
+            {
+                Header = "Close MediaDock"
+            };
+            menuItemExit.Click += new RoutedEventHandler(Close_Window);
+            contextMenu.Items.Add(menuItemExit);
+
+            return contextMenu;
+        }
+
+        private bool BuildConnectDisconnectMenuItem(out MenuItem menuItemToReturn)
+        {
+            menuItemToReturn = new();
+            if (connection != null)
+            {
+                switch (connection.State)
+                {
+                    case HubConnectionState.Disconnected:
+                        menuItemToReturn = new MenuItem
+                        {
+                            Header = "Connect"
+                        };
+                        menuItemToReturn.Click += Start_Connection;
+                        menuItemToReturn.Items.Add(menuItemToReturn);
+                        break;
+                    case HubConnectionState.Connected:
+                    case HubConnectionState.Connecting:
+                    case HubConnectionState.Reconnecting:
+                        menuItemToReturn = new MenuItem
+                        {
+                            Header = "Disconnect"
+                        };
+                        menuItemToReturn.Click += Stop_Connection;
+                        
+                        break;
+                    default:
+                        break;
+                }
+                return true;
+                
+            }
+            return false;
+        }
+
         public void Close_Window(object sender, System.EventArgs e)
         {
             Application.Current.MainWindow.Close();
@@ -199,7 +226,7 @@ namespace MediaDock
 
             try
             {
-                WriteToJsonFile<UserSettingsModel>(settingsFilePath, settings);
+                WriteToJsonFile<UserSettingsModel>(settingsFilePath, _settings);
                 MessageBox.Show("File Saved Successfully!", "Save Complete");
             }
             catch (Exception exception)
@@ -228,7 +255,7 @@ namespace MediaDock
         {
             this.Hide();
             // open the settings window and give it our current settings
-            SettingsWindow settingsWindow = new SettingsWindow(ref settings);
+            SettingsWindow settingsWindow = new SettingsWindow(ref _settings);
             
             bool? settingsUpdated = settingsWindow.ShowDialog();
 
@@ -239,9 +266,9 @@ namespace MediaDock
                 {
                     // save to the default file, update the UI, and update the services
                     SaveSettings();
-                    LoadWindowSettings(settings);
+                    LoadWindowSettings(_settings);
                     volumeUpdater.Stop();
-                    volumeUpdater = MasterVolumeUpdater(settings.VolumeSliderUpdateInterval);
+                    volumeUpdater = MasterVolumeUpdater(_settings.VolumeSliderUpdateInterval);
                 }
             }
             this.Show();
@@ -262,24 +289,23 @@ namespace MediaDock
                     writer.Close();
             }
         }
-        private void SetDefaultSettings()
+        private UserSettingsModel SetDefaultSettings()
         {
-            UserSettingsModel defaultSettings = new UserSettingsModel();
-            settings = defaultSettings;
+            return new UserSettingsModel();
         }
-        private static void LoadWindowSettings(UserSettingsModel s)
+        private static void LoadWindowSettings(UserSettingsModel settings)
         {
             Window window = (Window)Application.Current.MainWindow;
-            window.Topmost = s.WindowIsAlwaysOnTop;
-            window.WindowStartupLocation = s.WindowStartupLocation;
-            window.ResizeMode = s.WindowResizeMode;
+            window.Topmost = settings.WindowIsAlwaysOnTop;
+            window.WindowStartupLocation = settings.WindowStartupLocation;
+            window.ResizeMode = settings.WindowResizeMode;
         }
         private void UpdateVolumeSlider()
         {
             //updating UI from thread other than the main thread
             this.Dispatcher.Invoke(() =>
             {
-                VolumeSlider.Value = Core.GetMasterVolume();
+                VolumeSlider.Value =  Math.Round(Core.GetMasterVolume());
             });
         }
         private void MediaPrevious(object sender, RoutedEventArgs e)
@@ -293,21 +319,20 @@ namespace MediaDock
         }
         private async void MediaPlayPause(object sender, RoutedEventArgs e)
         {
-            isPlaying = !isPlaying;
-            Core.PlayPauseSong(isPlaying);
-            SetPlayPauseButton();
+            IsPlaying = !IsPlaying;
+            Core.PlayPauseSong(IsPlaying);
             // TODO: get proper playing status
             // check if specific application is playing volume
             if (connection != null)
             {
-                await connection.SendAsync("PlayingStatusChange", isPlaying);
+                await connection.SendAsync("PlayingStatusChange", IsPlaying);
             }
 
         }
 
         private void SetPlayPauseButton()
         {
-            if (isPlaying)
+            if (IsPlaying)
             {
                 PlayPause.Content = "Pause";
             }
